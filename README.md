@@ -1,73 +1,80 @@
 # Dimmer
 
-A small Windows tray app to control your monitors' brightness over DDC/CI, styled like a native Windows 11 flyout.
+**Control your monitors' real brightness from the Windows tray.** Dimmer talks to your monitors over DDC/CI, so it changes the actual backlight instead of putting a filter on top, and it looks and feels like a native Windows 11 flyout.
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
+![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 
 <p>
-  <img src="docs/displays.png" alt="Displays tab" width="320">
-  <img src="docs/presets.png" alt="Presets tab" width="320">
+  <img src="docs/displays.png" alt="Dimmer panel: brightness sliders for each monitor" width="320">
+  <img src="docs/presets.png" alt="Dimmer panel: brightness presets" width="320">
 </p>
 
 ## Features
 
-- **Real brightness, not an overlay**: changes the monitors' own backlight via DDC/CI, per monitor or all together.
-- **Dimming below 0%**: when the lowest backlight is still too bright, a click-through dark veil goes further. It leaves 1 px uncovered so Windows doesn't mistake it for a full-screen app and turn on *Do not disturb*.
-- **Presets**: save the current values, update or delete them, apply one with a click (also from the tray menu). The active one gets a check mark.
-- **Mouse wheel on the tray icon**: brightness up/down; scrolling past 0% moves into dimming.
-- **Windows 11 feel**: Fluent enter/exit animations synced to the display refresh, rounded corners, Inter font, dark theme.
-- **Italian and English**: follows the Windows language, or pick one from the tray menu.
-- **Start with Windows** from the tray menu.
+- **Real monitor brightness** for every external monitor, one by one or all together.
+- **Even darker than 0%**: a dimming layer for late nights, when the monitor's minimum is still too bright.
+- **Presets** like *Work*, *Movie* and *Night*: one click from the panel or the tray menu.
+- **Mouse wheel on the tray icon** to change brightness without opening anything.
+- **Start with Windows**, Italian and English, dark Windows 11 look.
 
 <p>
-  <img src="docs/new-preset.png" alt="New preset" width="320">
-  <img src="docs/wheel.png" alt="Mouse wheel indicator" width="244">
+  <img src="docs/new-preset.png" alt="Creating a new preset" width="320">
+  <img src="docs/wheel.png" alt="Brightness indicator shown when scrolling on the tray icon" width="244">
 </p>
 
-## Usage
+## Requirements
 
-| | |
-|---|---|
-| Left click on the icon | open the panel (*Displays* and *Presets* tabs) |
-| Mouse wheel on the icon | brightness up/down, then dimming |
-| Right click on the icon | presets, language, start with Windows, quit |
+- Windows 10 or 11
+- External monitors with **DDC/CI** turned on. Most monitors have it; look for *DDC/CI* in the monitor's own menu (the buttons on the monitor) and make sure it's enabled.
+- Python 3.11 or newer
+
+> Laptop screens are not supported: Dimmer controls external monitors.
 
 ## Install
 
-Requires Windows 10/11 and Python 3.11+. Your monitors need DDC/CI enabled (usually in the monitor's on-screen menu).
+1. **Install Python** (skip if you already have it). Open *Terminal* and run:
+   ```
+   winget install Python.Python.3.12
+   ```
+   or download it from [python.org](https://www.python.org/downloads/windows/).
 
-```
-pip install -r requirements.txt
-pythonw dimmer.pyw
-```
+2. **Download Dimmer**: click **Code → Download ZIP** at the top of this page and extract it to a folder you'll keep, for example `Documents\Dimmer`.
 
-Presets and settings are stored in `%APPDATA%\Dimmer\config.json`.
+3. **Install what it needs**: open *Terminal* in that folder (right click on the folder → *Open in Terminal*) and run:
+   ```
+   pip install -r requirements.txt
+   ```
 
-## How it's built
+4. **Start it**: double click `dimmer.pyw`. A sun icon appears in the tray, next to the clock.
 
-The code is in Italian; each module has a single job:
+5. *(Optional)* **Start with Windows**: right click the icon → **Start with Windows**.
 
-| module | what it does |
+Tip: if the icon is hidden behind the **^** arrow, drag it onto the taskbar so it's always visible and the mouse wheel works on it.
+
+## How to use it
+
+| Action | What happens |
 |---|---|
-| `logica.py` | pure rules (wheel steps, presets, descriptions): no Tk, no Windows |
-| `config.py` | loads and saves the settings (atomic writes) |
-| `lingua.py` | Italian/English: the Italian text is the key, plus an English dictionary |
-| `monitor.py` | DDC/CI on a worker thread; rapid changes to one monitor send only the last value |
-| `win32.py` | every Windows API call: windows, wheel hook, tray icon position, autostart |
-| `tema.py` | colors, sizes, fonts and icons |
-| `grafica.py` | Pillow drawing, with caches for what is redrawn often |
-| `animazione.py` | Windows 11 style enter/exit animations |
-| `widget.py` | slider, tabs, preset rows, buttons, text field |
-| `finestre.py` | rounded window base, dimming veil, wheel indicator |
-| `pannello.py` | the panel with its two tabs |
-| `app.py` | state, tray icon, commands between threads |
+| **Left click** on the icon | Opens the panel: *Displays* tab with the sliders, *Presets* tab with your presets |
+| **Mouse wheel** on the icon | Brightness up/down; scrolling down past 0% dims further |
+| **Right click** on the icon | Presets, language, start with Windows, quit |
 
-Tests: `python -m pytest` (a test fails if any UI string lacks its English translation).
-Screenshots: `python strumenti/screenshot.py` regenerates `docs/` with sample data.
+**Presets**: in the *Presets* tab, **New preset** saves the current brightness under a name. Hover a preset to update it with the current values (💾) or delete it (🗑, click twice to confirm).
 
-## Fonts
+## Troubleshooting
 
-`font/` contains Inter (SIL OFL 1.1, see `font/OFL-Inter.txt`), made static from the variable font with
-`strumenti/crea_font.py`. Dimmer loads it privately, without installing it; if it's missing, Segoe UI Variable is used.
+- **A monitor doesn't appear or doesn't change**: DDC/CI is probably off. Enable it in the monitor's menu, then quit Dimmer (right click → Quit) and start it again.
+- **The mouse wheel does nothing on the icon**: the icon is hidden behind the **^** arrow. Drag it onto the taskbar.
+- **Double clicking `dimmer.pyw` does nothing**: run `pythonw dimmer.pyw` from *Terminal* in the Dimmer folder.
+
+## Uninstall
+
+1. Right click the icon → turn off **Start with Windows** → **Quit**.
+2. Delete the Dimmer folder.
+3. *(Optional)* delete your saved presets: `%APPDATA%\Dimmer`.
 
 ## License
 
-[MIT](LICENSE). The Inter font keeps its own license (SIL OFL 1.1).
+[MIT](LICENSE). Includes the [Inter](https://rsms.me/inter/) font (SIL Open Font License 1.1).
