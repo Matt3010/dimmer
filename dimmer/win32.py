@@ -147,8 +147,23 @@ RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
 
 def comando_avvio(script):
+    """Cosa lancia Windows all'accesso: l'exe stesso, o pythonw con lo script."""
+    if getattr(sys, "frozen", False):
+        return f'"{sys.executable}"'
     pythonw = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
     return f'"{pythonw}" "{os.path.abspath(script)}"'
+
+
+_mutex = None
+
+
+def unica_istanza(nome):
+    """Vero se nessun'altra copia è già aperta (un mutex col nome dell'app)."""
+    global _mutex
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.CreateMutexW.restype = wt.HANDLE
+    _mutex = kernel32.CreateMutexW(None, False, f"Local\\{nome}")
+    return ctypes.get_last_error() != 183          # ERROR_ALREADY_EXISTS
 
 
 def avvio_attivo(nome):

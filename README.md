@@ -2,6 +2,7 @@
 
 **Control your monitors' real brightness from the Windows tray.** Dimmer talks to your monitors over DDC/CI, so it changes the actual backlight instead of putting a filter on top, and it looks and feels like a native Windows 11 flyout.
 
+[![Download](https://img.shields.io/github/v/release/Matt3010/dimmer?label=download&color=2f9e5e)](https://github.com/Matt3010/dimmer/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
@@ -28,30 +29,31 @@
 
 - Windows 10 or 11
 - External monitors with **DDC/CI** turned on. Most monitors have it; look for *DDC/CI* in the monitor's own menu (the buttons on the monitor) and make sure it's enabled.
-- Python 3.11 or newer
 
 > Laptop screens are not supported: Dimmer controls external monitors.
 
 ## Install
 
-1. **Install Python** (skip if you already have it). Open *Terminal* and run:
-   ```
-   winget install Python.Python.3.12
-   ```
-   or download it from [python.org](https://www.python.org/downloads/windows/).
+1. **Download [Dimmer.exe](https://github.com/Matt3010/dimmer/releases/latest/download/Dimmer.exe)** from the [latest release](https://github.com/Matt3010/dimmer/releases/latest). Nothing else is needed.
+2. Put it in a folder you'll keep, for example `Documents\Dimmer`, and **double click it**. A sun icon appears in the tray, next to the clock.
+3. *(Optional)* **Start with Windows**: right click the icon → **Start with Windows**.
 
-2. **Download Dimmer**: click **Code → Download ZIP** at the top of this page and extract it to a folder you'll keep, for example `Documents\Dimmer`.
-
-3. **Install what it needs**: open *Terminal* in that folder (right click on the folder → *Open in Terminal*) and run:
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. **Start it**: double click `dimmer.pyw`. A sun icon appears in the tray, next to the clock.
-
-5. *(Optional)* **Start with Windows**: right click the icon → **Start with Windows**.
+> **"Windows protected your PC"?** Dimmer isn't code-signed (signing costs money), so SmartScreen warns about it the first time. Click **More info → Run anyway**.
 
 Tip: if the icon is hidden behind the **^** arrow, drag it onto the taskbar so it's always visible and the mouse wheel works on it.
+
+<details>
+<summary>Run from source instead (Python 3.11+)</summary>
+
+```
+git clone https://github.com/Matt3010/dimmer.git
+cd dimmer
+pip install -r requirements.txt
+pythonw dimmer.pyw
+```
+
+To build the exe yourself: `pip install pyinstaller` and `python strumenti/crea_exe.py` (it ends up in `dist\`).
+</details>
 
 ## How to use it
 
@@ -67,13 +69,13 @@ Tip: if the icon is hidden behind the **^** arrow, drag it onto the taskbar so i
 
 - **A monitor doesn't appear or doesn't change**: DDC/CI is probably off. Enable it in the monitor's menu, then quit Dimmer (right click → Quit) and start it again.
 - **The mouse wheel does nothing on the icon**: the icon is hidden behind the **^** arrow. Drag it onto the taskbar.
-- **Double clicking `dimmer.pyw` does nothing**: run `pythonw dimmer.pyw` from *Terminal* in the Dimmer folder.
+- **Something else goes wrong**: Dimmer writes what it finds and any error to `%APPDATA%\Dimmer\dimmer.log`. Attach it when you [open an issue](https://github.com/Matt3010/dimmer/issues).
 
 ## Uninstall
 
 1. Right click the icon → turn off **Start with Windows** → **Quit**.
-2. Delete the Dimmer folder.
-3. *(Optional)* delete your saved presets: `%APPDATA%\Dimmer`.
+2. Delete `Dimmer.exe` (or the Dimmer folder).
+3. *(Optional)* delete your saved presets and the log: `%APPDATA%\Dimmer`.
 
 ## License
 

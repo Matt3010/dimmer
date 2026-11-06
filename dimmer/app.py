@@ -1,6 +1,10 @@
 """L'applicazione: tiene lo stato (luminosità e oscuramento), l'icona nella tray e
 smista i comandi che arrivano dagli altri thread (tray, rotellina, letture DDC)."""
+import logging
+import logging.handlers
+import os
 import queue
+import sys
 import threading
 import tkinter as tk
 
@@ -9,7 +13,8 @@ import pystray
 from . import win32
 from . import lingua
 from .animazione import Animazione
-from .config import NOME_APP, Config
+from . import __version__
+from .config import NOME_APP, Config, file_config
 from .finestre import Osd, Velo
 from .grafica import icona_tray
 from .lingua import t
@@ -26,6 +31,7 @@ class App:
     def __init__(self, monitor=None, config=None, script=None):
         self.root = tk.Tk()
         self.root.withdraw()
+        self.root.report_callback_exception = lambda *e: log.error("errore nell'interfaccia", exc_info=e)
         self.monitor = monitor or Monitor()
         self.cfg = config or Config()
         lingua.imposta(self.cfg.lingua)
@@ -33,6 +39,7 @@ class App:
         self.script = script
         self.nomi = self.monitor.nomi
         self.valori = self.monitor.leggi()
+        log.info("monitor: %s, luminosità: %s", self.nomi or "nessuno", self.valori)
         self.filtro = 0
         self.comandi = queue.Queue()          # dagli altri thread al thread Tk
         self._timer_salva = None
@@ -196,7 +203,26 @@ class App:
         self.root.mainloop()
 
 
+log = logging.getLogger("dimmer")
+
+
+def prepara_log():
+    """Un exe senza console nasconde gli errori: finiscono in %APPDATA%\\Dimmer\\dimmer.log
+    (al massimo 2 file da 200 KB)."""
+    percorso = os.path.join(os.path.dirname(file_config()), "dimmer.log")
+    os.makedirs(os.path.dirname(percorso), exist_ok=True)
+    gestore = logging.handlers.RotatingFileHandler(percorso, maxBytes=200_000, backupCount=1, encoding="utf8")
+    gestore.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    log.addHandler(gestore)
+    log.setLevel(logging.INFO)
+    sys.excepthook = lambda *e: log.critical("errore non gestito", exc_info=e)
+
+
 def main(script):
+    if not win32.unica_istanza(NOME_APP):   # già aperto: niente seconda icona
+        return
+    prepara_log()
+    log.info("Dimmer %s avviato (%s)", __version__, "exe" if getattr(sys, "frozen", False) else "python")
     win32.dpi_reale()
     win32.carica_font_privati(FILE_FONT)
     app = App(script=script)

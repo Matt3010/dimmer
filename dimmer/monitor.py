@@ -1,6 +1,9 @@
 """I monitor via DDC/CI. Il DDC/CI è lento (decine di ms a comando): le scritture le fa
 un thread a parte e, se intanto arrivano più valori per lo stesso monitor, manda solo l'ultimo."""
+import logging
 import threading
+
+log = logging.getLogger("dimmer")
 
 
 class Monitor:
@@ -18,6 +21,7 @@ class Monitor:
         try:
             valori = list(self._sbc.get_brightness())
         except Exception:
+            log.warning("lettura della luminosità non riuscita", exc_info=True)
             valori = []
         return (valori + [50] * len(self.nomi))[:len(self.nomi)]
 
@@ -40,7 +44,7 @@ class Monitor:
                 try:
                     self._sbc.set_brightness(valore, display=indice)
                 except Exception:
-                    pass
+                    log.warning("monitor %s: luminosità %s non impostata", indice, valore, exc_info=True)
             with self._lock:   # tolti solo se intanto non ne è arrivato uno nuovo
                 for indice, valore in lavori.items():
                     if self._da_applicare.get(indice) == valore:
